@@ -447,14 +447,19 @@ def check_for_comp():
             compStartDateLocal = compStartDateLocal.strftime("%a, %b.%d %I:%M%p")
             compEndDateLocal = compEndDate.astimezone(current_timezone)
             compEndDateLocal = compEndDateLocal.strftime("%a, %b.%d %I:%M%p")
-            lblCompTitle["text"] = rows[0]["compName"] + "\n" + str(compStartDateLocal) + " - " + str(compEndDateLocal)
+            lblCompTitle["text"] = rows[0]["compName"] + "\n" + str(compStartDateLocal) + " - " + str(compEndDateLocal) + "\n"
             currentCompId = rows[0]["id"]
             currentCompName = rows[0]["compName"]
             currentCompStart = rows[0]["startTime"]
             currentCompEnd = rows[0]["endTime"]
             # Figure out animals and prizes and add labels
             js = json.loads(rows[0]["prizes"])
-            currentCompAllowedWeapons = js[0]['allowedWeapons']
+            try:
+                currentCompAllowedWeapons = js[0]['allowedWeapons']
+            except Exception as e:
+                print("An exception occurred: ", e)
+            if currentCompAllowedWeapons != []:
+                lblCompNotes["text"] = "Allowed Weapons:\n\n" + str(currentCompAllowedWeapons)
             i = 0
             for j in js:
                 curRow = 21 + i
@@ -960,6 +965,7 @@ lblRecentKillWhenVal4 = Label(frame, text="-")
 mySeparator3 = ttk.Separator(frame, orient='horizontal')
 lblCurrentCompHeader = Label(frame, text="Current Competition", font='Helvetica 13 bold')
 lblCompTitle = Label(frame, text="None", font='Helvetica 13 italic', fg='blue')
+lblCompNotes = Label(frame, text="None", font='Helvetica 10', wraplength=250)
 
 lblCompAnimal = Label(frame, text="Animal", font='Helvetica 13')
 lblCompHunter = Label(frame, text="Hunter", font='Helvetica 13')
@@ -1057,8 +1063,9 @@ lblRecentKillWhenVal4.grid(row=16, column=5)
 
 mySeparator3.grid(row=17, columnspan=100, sticky="ew", pady=10)
 
-lblCurrentCompHeader.grid(row=18, column=0, columnspan=100, sticky="ew")
-lblCompTitle.grid(row=19, column=0, columnspan=100, sticky="ew")
+lblCurrentCompHeader.grid(row=18, column=0, columnspan=5, sticky="ew")
+lblCompTitle.grid(row=19, column=0, columnspan=5, sticky="ew")
+lblCompNotes.grid(row=19, column=5, rowspan=30, sticky="ew")
 
 lblCompAnimal.grid(row=20, column=0)
 lblCompHunter.grid(row=20, column=1)
