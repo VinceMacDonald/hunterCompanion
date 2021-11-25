@@ -42,6 +42,7 @@ currentCompName = None
 currentCompStart = None
 currentCompEnd = None
 currentCompAnimals = []
+currentCompAllowedWeapons = []
 compLabels = {"animal":[],"hunter":[],"score":[],"killdate":[],"prize":[]}
 current_timezone = pytz.timezone(config["timezone"])
 
@@ -67,13 +68,23 @@ fn = lambda x : 255 if x > thresh else 0
 def get_green_letters(img):
     # Scale image up
     width, height = img.size
-    img = img.resize((round(width*1.4), round(height*1.4))) # WIDTH +40%
+    img = img.resize((round(width*2), round(height*2))) # WIDTH +100%
+
+    pixels = img.load() # create the pixel map
+    for i in range(img.size[0]): # for every pixel:
+        for j in range(img.size[1]):
+            px = pixels[i,j]
+            if px[1] < 200:
+                pixels[i,j] = (255,255,255) # change to white
+            else:
+                pixels[i,j] = (167,255,103) # change to green
     
     # It converts the BGR color space of image to HSV color space
     data = np.array(img)
+    #data = cv2.resize(data, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
     hsv = cv2.cvtColor(data, cv2.COLOR_BGR2HSV)
 
-    lower_color = np.array([40, 80, 207])
+    lower_color = np.array([21,79,203])
     upper_color = np.array([95, 255, 255])
     mask = cv2.inRange(hsv, lower_color, upper_color)
      
@@ -94,6 +105,7 @@ def get_green_letters(img):
     im2 = ImageOps.invert(im2)
     im2 = im2.convert('1')
     im2 = im2.convert("RGB")
+    im2 = im2.filter(ImageFilter.BoxBlur(1))
     return im2
 
 def get_white_letters(img):
@@ -415,7 +427,7 @@ def dropdown_animal_updated(*args):
     db.close()
 
 def check_for_comp():
-    global utc, currentCompId, currentCompName, compLabels, currentCompStart, currentCompEnd, currentCompAnimals
+    global utc, currentCompId, currentCompName, compLabels, currentCompStart, currentCompEnd, currentCompAnimals, currentCompAllowedWeapons
     curdatetime = datetime.now(tz=pytz.utc) # Server saves dates in UTC
     db = mysql.connect(
         host="52.53.69.28",
@@ -442,6 +454,7 @@ def check_for_comp():
             currentCompEnd = rows[0]["endTime"]
             # Figure out animals and prizes and add labels
             js = json.loads(rows[0]["prizes"])
+            currentCompAllowedWeapons = js[0]['allowedWeapons']
             i = 0
             for j in js:
                 curRow = 21 + i
@@ -485,7 +498,7 @@ def check_for_comp():
     db.close()
 
 def update_competition():
-    global utc, currentCompId, currentCompName, currentCompStart, currentCompEnd, compLabels, currentCompAnimals, current_timezone
+    global utc, currentCompId, currentCompName, currentCompStart, currentCompEnd, compLabels, currentCompAnimals, current_timezone, currentCompAllowedWeapons
     db = mysql.connect(
         host="52.53.69.28",
         user="huntercotw",
@@ -535,6 +548,7 @@ def update_competition():
         currentCompStart = None
         currentCompEnd = None
         currentCompAnimals = []
+        currentCompAllowedWeapons = []
 
     else:
         # Comp is still active, update again in 30 secs
@@ -645,7 +659,7 @@ def new_top_trophy(comp, top):
             print("An exception occurred: ", e) 
 
 def mainLoop():
-    global search, reserveCuatroColinas, reserveHirschfelden, reserveLaytonLake, reserveMedvedTaiga, reserveParqueFernando, reserveSilverRidgePeaks, reserveTeAwaroa, reserveVurhongaSavanna, reserveYukonValley, reserveRanchoArroyo, toaster, thresh, fn, config, currentCompId, currentCompName, currentCompStart, currentCompEnd, currentCompAnimals
+    global search, reserveCuatroColinas, reserveHirschfelden, reserveLaytonLake, reserveMedvedTaiga, reserveParqueFernando, reserveSilverRidgePeaks, reserveTeAwaroa, reserveVurhongaSavanna, reserveYukonValley, reserveRanchoArroyo, toaster, thresh, fn, config, currentCompId, currentCompName, currentCompStart, currentCompEnd, currentCompAnimals, currentCompAllowedWeapons
     pos = search.imagesearch()
 
     r1 = reserveCuatroColinas.imagesearch()
@@ -748,15 +762,13 @@ def mainLoop():
 
         # Calculating Shot Distance
         distance = 0
-        cropped_im = im.crop((1625, 198, 1726, 230))
+        cropped_im = im.crop((1653, 198, 1726, 235))
         dci = get_green_letters(cropped_im)
         distance = getDistance(dci, 245)
         
         lblKingCompImage.grid_remove()
         lblKingTopImage.grid_remove()
-        #print("Animal: " + str(animal))
-        #print("Medal: " + medalScore)
-        #print("Trophy: " + str(trophyRating))
+
         lblLastKillAnimalVal['text'] = str(animal)
         lblLastKillMedalVal['text'] = medalScore
         lblLastKillTrophyVal['text'] = str(trophyRating)
@@ -805,7 +817,7 @@ def mainLoop():
 
         # Update database with kill
         # Only add the competition id if this is an animal in the comp
-        if str(animal) in currentCompAnimals:
+        if str(animal) in currentCompAnimals and (str(weapon) in currentCompAllowedWeapons or currentCompAllowedWeapons == []):
             ccid = currentCompId
         else:
             ccid=""
