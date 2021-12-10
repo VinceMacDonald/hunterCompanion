@@ -1,0 +1,5 @@
+pyinstaller -F hunt2.py
+
+pyinstaller -F huntcompanion.py --onefile --noconsole --paths=C:\Python39\Lib\site-packages
+
+pyinstaller -F huntcompanion.py --onefile --paths=C:\Python39\Lib\site-packages

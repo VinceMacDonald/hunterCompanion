@@ -58,6 +58,7 @@ reserveTeAwaroa = Search("reserves/teawaroa.png")
 reserveVurhongaSavanna = Search("reserves/vurhonga.png")
 reserveYukonValley = Search("reserves/yukon.png")
 reserveRanchoArroyo = Search("reserves/arroyo.png")
+reserveMississippi = Search("reserves/mississippi.png")
 
 toaster = ToastNotifier()
 # for image capturing
@@ -169,8 +170,10 @@ def getAnimalName(text):
         animal = "European Bison"
     if text.find("EUROPEAN HARE") > -1:
         animal = "European Hare"
-    if text.find("EUROPEAN RABBIT") > -1:
+    if text.find("RABB") > -1:
         animal = "European Rabbit"
+        if text.find("EAST") > -1:
+            animal = "Eastern Cottontail Rabbit"
     if text.find("FALLOW") > -1:
         animal = "Fallow Deer"
     if text.find("ERAL") > -1 and text.find("G") > -1:
@@ -211,8 +214,10 @@ def getAnimalName(text):
         animal = "Puma"
     if text.find("RED DEER") > -1:
         animal = "Red Deer"
-    if text.find("RED FOX") > -1:
+    if text.find("FOX") > -1:
         animal = "Red Fox"
+        if text.find("G") > -1:
+            animal = "Gray Fox"
     if text.find("EINDEE") > -1:
         animal = "Reindeer"
     if text.find("ROCKY") > -1:
@@ -235,8 +240,12 @@ def getAnimalName(text):
         animal = "Turkey"
         if text.find("ANDE") > -1:
             animal = "Rio Grande Turkey"
-    if text.find("WARTHOG") > -1:
-        animal = "Warthog"
+        if text.find("EAST") > -1:
+            animal = "Eastern Turkey"
+    if text.find("HOG") > -1:
+        animal = "Wild Hog"
+        if text.find("WART") > -1:
+            animal = "Warthog"
     if text.find("WATER") > -1 and text.find("BUF") > -1:
         animal = "Water Buffalo"
     if text.find("WHITE") > -1 and text.find("DEER") > -1:
@@ -247,6 +256,12 @@ def getAnimalName(text):
         animal = "Collared Peccary"
     if text.find("HEAS") > -1:
         animal = "Ring-Necked Pheasant"
+    if text.find("GAT") > -1:
+        animal = "American Alligator"
+    if text.find("QUA") > -1:
+        animal = "Bobwhite Quail"
+    if text.find("RAC") > -1:
+        animal = "Common Raccoon"
     return animal
 #################################
 def getAnimal(img, th):
@@ -393,6 +408,8 @@ def getWeaponName(text):
         weap = "Rhino 454"
     if text.find("STRAD") > -1:
         weap = ".270 Stradivarius"
+    if text.find("KUL") > -1:
+        weap = "Kullman .22H"
     return weap
 
 def dropdown_reserve_updated(*args):
@@ -664,7 +681,7 @@ def new_top_trophy(comp, top):
             print("An exception occurred: ", e) 
 
 def mainLoop():
-    global search, reserveCuatroColinas, reserveHirschfelden, reserveLaytonLake, reserveMedvedTaiga, reserveParqueFernando, reserveSilverRidgePeaks, reserveTeAwaroa, reserveVurhongaSavanna, reserveYukonValley, reserveRanchoArroyo, toaster, thresh, fn, config, currentCompId, currentCompName, currentCompStart, currentCompEnd, currentCompAnimals, currentCompAllowedWeapons
+    global search, reserveCuatroColinas, reserveHirschfelden, reserveLaytonLake, reserveMedvedTaiga, reserveParqueFernando, reserveSilverRidgePeaks, reserveTeAwaroa, reserveVurhongaSavanna, reserveYukonValley, reserveRanchoArroyo, reserveMississippi, toaster, thresh, fn, config, currentCompId, currentCompName, currentCompStart, currentCompEnd, currentCompAnimals, currentCompAllowedWeapons
     pos = search.imagesearch()
 
     r1 = reserveCuatroColinas.imagesearch()
@@ -677,6 +694,7 @@ def mainLoop():
     r8 = reserveVurhongaSavanna.imagesearch()
     r9 = reserveYukonValley.imagesearch()
     r10 = reserveRanchoArroyo.imagesearch()
+    r11 = reserveMississippi.imagesearch()
 
     if r1[0] != -1:
         selectedReserve.set("Cuatro Colinas")
@@ -717,6 +735,10 @@ def mainLoop():
     if r10[0] != -1:
         selectedReserve.set("Rancho Del Arroyo")
         toaster.show_toast("Active Ranch", "Rancho Del Arroyo", icon_path="favicon.ico", duration=10)
+        time.sleep(3)
+    if r11[0] != -1:
+        selectedReserve.set("Mississippi Acres")
+        toaster.show_toast("Active Ranch", "Mississippi Acres", icon_path="favicon.ico", duration=10)
         time.sleep(3)
     
     if pos[0] != -1:
@@ -762,7 +784,7 @@ def mainLoop():
         # Calculating Weapon
         weapon = ""
         cropped_im = im.crop((1425, 137, 1726, 173))
-        wci = get_green_letters(cropped_im)
+        wci = get_green_letters(cropped_im) 
         weapon = getWeapon(wci, 245)
 
         # Calculating Shot Distance
